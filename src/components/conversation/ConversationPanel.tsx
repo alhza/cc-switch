@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { X, Search, RefreshCw } from "lucide-react";
-import { ask } from "@tauri-apps/plugin-dialog";
 import { ConversationMeta } from "../../types";
 import { ConversationList } from "./ConversationList";
 import ConversationDetailModal from "./ConversationDetailModal";
-import { buttonStyles } from "../../lib/styles";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
 interface ConversationPanelProps {
   isOpen: boolean;
@@ -26,6 +25,10 @@ export default function ConversationPanel({
   >("all");
   const [selectedConversation, setSelectedConversation] =
     useState<ConversationMeta | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    filePath: string;
+  }>({ isOpen: false, filePath: "" });
 
   // 加载对话记录
   const loadConversations = async () => {
@@ -65,30 +68,24 @@ export default function ConversationPanel({
   };
 
   // 删除对话记录
-  const handleDelete = async (filePath: string) => {
-    const confirmed = await ask("确定要删除这条对话记录吗?", {
-      title: "确认删除",
-      kind: "warning",
-      okLabel: "删除",
-      cancelLabel: "取消",
-    });
+  const handleDelete = (filePath: string) => {
+    setDeleteConfirm({ isOpen: true, filePath });
+  };
 
-    if (!confirmed) {
-      return;
-    }
-
+  const confirmDelete = async () => {
     try {
-      await window.api.deleteConversation(filePath);
+      await window.api.deleteConversation(deleteConfirm.filePath);
+      setDeleteConfirm({ isOpen: false, filePath: "" });
       // 重新加载列表
       await loadConversations();
     } catch (error) {
       console.error("删除对话记录失败:", error);
-      await ask(`删除失败: ${error}`, {
-        title: "错误",
-        kind: "error",
-        okLabel: "确定",
-      });
+      alert(`删除失败: ${error}`);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ isOpen: false, filePath: "" });
   };
 
   // 初始加载
@@ -223,6 +220,15 @@ export default function ConversationPanel({
           onClose={() => setSelectedConversation(null)}
         />
       )}
+
+      {/* 删除确认对话框 */}
+      <DeleteConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="确认删除"
+        message="确定要删除这条对话记录吗？删除后将无法恢复。"
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 }
