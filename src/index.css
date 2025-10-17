@@ -1,0 +1,56 @@
+/* 引入 Tailwind v4 内建样式与工具 */
+@import "tailwindcss";
+
+/* 覆盖 Tailwind v4 默认的 dark 变体为“类选择器”模式 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 全局基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  @apply font-sans antialiased;
+  line-height: 1.5;
+  /* 让原生控件与滚动条随主题切换配色 */
+  color-scheme: light;
+}
+
+body {
+  @apply m-0 p-0 bg-gray-50 text-gray-900 text-sm dark:bg-gray-950 dark:text-gray-100;
+}
+
+/* 暗色模式下启用暗色原生控件/滚动条配色 */
+html.dark {
+  color-scheme: dark;
+}
+
+/* 滚动条样式（避免在伪元素中使用自定义 dark 变体，消除构建警告） */
+::-webkit-scrollbar {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+::-webkit-scrollbar-track {
+  background-color: #f4f4f5;
+}
+html.dark ::-webkit-scrollbar-track {
+  background-color: #27272a;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #d4d4d8;
+  border-radius: 0.25rem;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: #52525b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a1a1aa;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #71717a;
+}
+
+/* 焦点样式 */
+*:focus-visible {
+  @apply outline-2 outline-blue-500 outline-offset-2;
+}
